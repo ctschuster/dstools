@@ -1,0 +1,53 @@
+#!/bin/bash
+
+mysub="bsub -q awstransfer -o /dev/null -e /dev/null"
+mysync="aws s3 sync --sse AES256 --no-follow-symlinks --exclude .snapshot"
+mycp="aws s3 cp --sse AES256"
+
+
+#fromdir=/from-dir/data-dir
+#destdir=s3://my-bucket/my-project
+op=$1
+fromdir=$2
+destdir=$3
+
+usage() {
+    echo "usage:   $0 upload|check  <nfs-path>  <s3-path>"
+    echo "ex: $0 upload /from-dir/data-dir s3://my-bucket/my-project"
+    exit
+}
+
+if [ -z "$op" -o -z "$fromdir" -o -z "$destdir" ]; then
+    usage
+fi
+if [ ! -d $fromdir ]; then
+    echo "error - fromdir not available or not directory"
+    exit
+fi
+
+case "$op" in
+
+upload)
+    dirs=`cd $fromdir && find * -mindepth 0 -maxdepth 0 -type d`
+    for dir in $dirs; do
+        $mysub $mysync $fromdir/$dir $destdir/$dir
+    done
+
+    largefiles=`cd $fromdir && find * -maxdepth 3 -size +10G`
+    for file in $largefiles; do
+        $mysub -J /awstransfer/single $mycp $fromdir/$file $destdir/$file
+    done
+
+    $mysub $mysync $fromdir $destdir
+    ;;
+check)
+#   ds-summary $fromdir $destdir
+    ;;
+check-dest)
+#   ds-summary $destdir
+    ;;
+
+*)
+    usage
+
+esac

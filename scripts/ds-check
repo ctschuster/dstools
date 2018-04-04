@@ -1,0 +1,144 @@
+#!/usr/bin/env perl
+########################################################################
+# ds-check
+########################################################################
+# Usage:
+#     ds-check  tarfile.tgz  [...]
+########################################################################
+
+
+use strict;
+use warnings;
+
+use Data::Dumper;
+use File::Basename;
+
+
+my $verifyChecksum = 0;
+
+
+########################################################################
+sub getMetadataFromLogfile($) {
+    my ($tarfile) = @_;
+
+    $tarfile =~ m/(.*).tgz/;
+    my $logfile  = "$1.log";
+    my $zlogfile = "$1.log.gz";
+
+    my ($logfound, $pass, $md5expected, $sizeExpected);
+
+    my @lastlines = ();
+    if ( -e $logfile ) {
+        @lastlines = `tail -n 5 $logfile`;
+        $logfound = $logfile;
+    } elsif ( -e $zlogfile ) {
+        @lastlines = `zcat $zlogfile | tail -n 5`;
+        $logfound = $zlogfile;
+    } else {
+        return;
+    }
+    chomp @lastlines;
+
+    # @lastlines should include lines like these:
+    # [2017-07-20 13:37:58]  MD5:    991435132310bbce963dd7ebe6494ce5
+    # [2017-07-20 13:37:58]  Size:   615063161 (bytes)
+    # [2017-07-20 13:37:58]  Summary aws_work.tgz - PASS
+
+    $pass = ($lastlines[$#lastlines] =~ m/PASS/) ? 1 : 0;
+
+    my @md5lines = grep /MD5:/, @lastlines;
+    if (@md5lines) {
+        $md5lines[0] =~ /MD5: *([0-9A-Fa-f]+)/;
+        $md5expected = $1;
+    }
+
+    my @sizelines = grep /Size:/, @lastlines;
+    if (@sizelines) {
+        $sizelines[0] =~ /Size: *(\d+)/;
+        $sizeExpected = $1;
+    }
+
+    return ($logfound, $pass, $md5expected, $sizeExpected);
+}
+
+########################################################################
+sub testTarball($) {
+    my ($tarfile) = @_;
+
+    if ($tarfile !~ m/.tgz$/) {
+        print "skipping non-candidate file $tarfile\n";
+        return;
+    }
+
+    my ($logfound, $pass, $md5expected, $sizeExpected) = getMetadataFromLogfile($tarfile);
+
+    my $checksumTestResult = '.';
+    if ($verifyChecksum) {
+        my $md5out = `md5sum $tarfile`;
+        chomp $md5out;
+        $md5out =~ s/\s.*//;
+        if (!defined $md5expected) {
+            print "MD5SUM not found\n";
+        } elsif ($md5out eq $md5expected) {
+            $checksumTestResult = 'pass';
+        } else {
+            $checksumTestResult = 'fail';
+            print "MD5SUM fail - expected: $md5expected ; actual: $md5out\n";
+        }
+    }
+
+    my $sizeTestResult = '.';
+    my $sizeActual = -s $tarfile;
+    if (!defined $sizeExpected) {
+        $sizeTestResult = 'not-found';
+    } elsif ($sizeActual eq $sizeExpected) {
+        $sizeTestResult = 'pass';
+    } else {
+        $sizeTestResult = 'fail';
+        print "SIZE fail - expected: $sizeExpected; actual: $sizeActual\n";
+    }
+
+    my $finalResult =
+        ($logfound && $pass && $sizeTestResult eq 'pass' && $checksumTestResult ne 'fail')
+        ? "PASS" : "fail";
+
+    printf "%-48s %9s %4s %9s %8s %8s\n",
+        $tarfile,
+        $logfound ? "yes" : "no",
+        $pass ? "pass" : "fail",
+        $sizeTestResult,
+        $checksumTestResult,
+        $finalResult;
+}
+
+########################################################################
+if (scalar @ARGV == 0) {
+    my $progname = basename($0);
+    printf "usage: $progname <tarball> [...]\n";
+    exit 0;
+}
+if ($ARGV[0] =~ m/--paranoid/) {
+    $verifyChecksum = 1;
+    shift @ARGV;
+}
+printf "%-48s %9s %4s %9s %8s %8s\n",
+    "Tarfile",
+    "Log-Found",
+    "Pass",
+    "Size",
+    "Checksum",
+    "Overall";
+printf "%-48s %9s %4s %9s %8s %8s\n",
+    "-------",
+    "---------",
+    "----",
+    "---------",
+    "--------",
+    "-------";
+
+foreach my $tarball (@ARGV) {
+    testTarball($tarball);
+}
+
+########################################################################
+0;

@@ -1,0 +1,115 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use File::Basename;
+use File::Spec;
+
+########################################################################
+sub summarize($) {
+    my ($loc) = @_;
+    my ($nbytes, $nfiles) = (-1,-1);
+    my $found;                    # TODO - redesign for S3 implementation
+    if ($loc =~ m/^s3:/i) {
+        # e.g. s3cmd du s3://my-bucket/my-project
+        # >>>    73852450544 70 objects s3://my-bucket/my-project
+        # my $cmd = "s3cmd du $loc";
+        my $cmd = "aws s3 ls --recursive --summarize $loc";
+        my @alloutput = `$cmd`;
+        if (!$?) {
+            # >>> Total Objects: 26
+            # >>>    Total Size: 383037453399
+            my $out1 = $alloutput[$#alloutput-1];    chomp $out1;
+            my $out2 = $alloutput[$#alloutput];      chomp $out2;
+            $nfiles = [split /:\s+/, $out1]->[1];
+            $nbytes = [split /:\s+/, $out2]->[1];
+        }
+        $found = 1;
+    } else {
+        if (-f $loc) {
+            $nfiles = 1;
+            $nbytes = -s $loc;
+            $found = 1;
+        } elsif (-d $loc) {
+            # cd /my-path
+            # find my-project/ -type f | xargs wc -c
+            # find my-project/ -type f | wc -l
+            my $dir = File::Spec->rel2abs($loc);
+            $dir =~ s#/+$##;    # remove trailing slashes
+            my ($name,$path) = fileparse($dir);
+            chdir $path || die "could not chdir";
+            my @filelist = `find $name -path $name/.snapshot -prune -o -type f -print`;
+            chomp @filelist;
+
+            $nbytes = 0;
+            foreach my $f (@filelist) {
+               $nbytes += -s $f;
+            }
+
+            $nfiles = scalar @filelist;
+            $found = 1;
+        } elsif (! -e $loc) {
+            $found = 0;
+        } else {
+            die "file type not supported\n";
+        }
+    }
+    if (!$found) {
+        printf "--not-found--  $loc\n"
+    } elsif ($nbytes>=0) {
+        my $humsizstring = humansize($nbytes);
+        if ($humsizstring) {
+            printf "$nbytes  (%s)  $nfiles  $loc\n", $humsizstring;
+        } else {
+            printf "$nbytes  $nfiles  $loc\n"
+        }
+    } else {
+        print "--sizing-failed--  $loc\n";
+    }
+}
+
+sub getBinSize($) {
+    my @symbol = ("B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB");
+    my ($nbytes) = @_;
+    my $order = 0;
+    my $size = $nbytes;
+    while($size>=1024 && $order<=5) {
+        $order ++;
+        $size /= 1024;
+    }
+    return sprintf "%.3f %s", $size, $symbol[$order];
+}
+sub getDecSize($) {
+    my @symbol = ("B", "kB", "MB", "GB", "TB", "PB", "EB");
+    my ($nbytes) = @_;
+    my $order = 0;
+    my $size = $nbytes;
+    while($size>=1000 && $order<=5) {
+        $order ++;
+        $size /= 1000;
+    }
+    return sprintf "%.3f %s", $size, $symbol[$order];
+}
+
+sub humansize($) {
+    my ($nbytes) = @_;
+
+    return ($nbytes >= 0)
+           ? sprintf("%s, %s",getDecSize($nbytes),getBinSize($nbytes))
+           : undef;
+}
+
+########################################################################
+if (!@ARGV) {
+my $base = basename $0;
+    print<<"EOT";
+usage: $base <nfs-loc|s3-loc>
+ex: $base /my-path/my-project
+    $base s3://my-bucket/my-project
+EOT
+    exit;
+}
+foreach my $loc (@ARGV) {
+    summarize($loc);
+}

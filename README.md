@@ -11,6 +11,7 @@ verifiable.
 
 ### Synopsis
 
+    ds-summary [ <s3-prefix> | <dir-path> ] [...]
 
 ### Considerations
 

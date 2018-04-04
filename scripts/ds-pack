@@ -1,0 +1,144 @@
+#!/bin/bash
+########################################################################
+# Script:  ds-pack [-r] [-i] <dir> [<dir> ...]
+########################################################################
+# This tool tarballs a dataset into the current working directory.  In
+# so doing, it logs the original path, host executed on, whether tarball
+# processing succeeded or failed, and the log of the tar processing.
+########################################################################
+# Option:
+#    -i   Allow tarball to succeed even if read errors occurred, such as
+#         from read permission errors.  [By default, this option is off,
+#         so any unreadable content will be treated as a failure.]
+########################################################################
+# Example:
+#    user@host:/curr/dir>>  ds-pack /path/mydata
+#
+# Creates the following output:
+#    /curr/dir/mydata.tgz - tarball of contents /path/mydata
+#                           files have relative path:
+#                               mydata/file1
+#                               mydata/file2
+#    /curr/dir/mydata.log - start / stop time info, exit status,
+#                         - output of tar command (list of files & errors)
+########################################################################
+
+if [ "$1" = "-r" ]; then
+    autoremoveifpass=1
+    shift
+else
+    autoremoveifpass=0
+fi
+
+if [ "$1" = '-i' ]; then
+    opts=--ignore-failed-read
+    shift
+else
+    opts=""
+fi
+
+
+sizedataset() {
+    ds=$1
+    dir=`dirname $ds`
+    base=`basename $ds`
+
+    echo "[`date +'%F %T'`]  Sizing content $ds from server `hostname`" | tee ${base}.log
+    echo "PWD:      $PWD"
+    echo "dataset:  $ds"
+    cmd="df -hP $ds"
+    echo "File system info:" | tee -a ${base}.log
+    echo ">> $cmd" | tee -a ${base}.log
+    $cmd | tee -a ${base}.log
+    cmd="ds-summary $ds"
+    echo "Dataset rough stats (shown: #bytes #files <dataset>)" | tee -a ${base}.log
+    echo ">> $cmd" | tee -a ${base}.log
+    $cmd | tee -a ${base}.log
+}
+
+packdataset() {
+    ds=$1
+    dir=`dirname $ds`
+    base=`basename $ds`
+    logfile="${base}.log"
+    tarfile="${base}.tgz"
+
+    echo "[`date +'%F %T'`]  Generating tarball of $ds on server `hostname`" > $logfile
+
+    ( cd $dir && tar cvfz - --exclude-backups --exclude=.snapshot $opts ${base} ) > $tarfile 2>> $logfile
+    ret1=$?
+    if [ $ret1 = 0 ]; then
+        status=success
+    else
+        status=failure
+    fi
+    echo "[`date +'%F %T'`]  Tarball completion: $status" | tee -a $logfile
+
+    echo "[`date +'%F %T'`]  Generating file list" | tee -a $logfile
+    tar tvfz $tarfile 2>&1 >> $logfile
+    ret2=$?
+    if [ $ret2 = 0 ]; then
+        status=success
+    else
+        status=failure
+    fi
+    echo "[`date +'%F %T'`]  Tarball listing: $status" | tee -a $logfile
+
+    md5=`md5sum $tarfile | awk '{print $1}'`
+    size=`ls -l $tarfile | awk '{print $5}'`
+    if [ $ret1 = 0 -a $ret2 = 0 -a $size -gt 0 ]; then
+        summary=PASS
+    else
+        summary=FAIL
+    fi
+    echo "[`date +'%F %T'`]  Generating checksum/summary info" | tee -a $logfile
+    echo "[`date +'%F %T'`]  MD5:    ${md5}" | tee -a $logfile
+    echo "[`date +'%F %T'`]  Size:   ${size} (bytes)" | tee -a $logfile
+    echo "[`date +'%F %T'`]  Summary $tarfile - ${summary}" | tee -a $logfile
+
+    if [ "$USER" = "root" ]; then
+        chmod ug+rw,o+r $tarfile $logfile
+        chgrp TGAC $tarfile $logfile
+    fi
+
+    # In case there is a tarballing process which completes when we tried to break
+    # out and removed the tgz & log, do not auto-delete.  See author ctschu for more
+    # on reasoning.  ctschu / 2017-09-25
+    if [ "$summary" = "PASS"  -a  $autoremoveifpass -gt 0  -a  -e $tarfile  -a  -e $logfile ]; then
+        echo "Packing succeeded for $ds; remove source data"
+        datestr=`date +'%FT%T'`
+        temploc=${ds}-DELETEME-${datestr}
+        mv $ds $temploc
+        if [ $? -eq 0 ]; then
+            /bin/rm -fr $temploc
+        fi
+    fi
+}
+
+packit() {
+    ds=$1
+
+    # drop trailing slashes
+    ds=$(echo $ds | sed 's:/*$::')
+
+    base=`basename $ds`
+
+    if [ -z "$ds" ]; then
+        echo "dataset $ds - skipping; empty dataset name?"
+    elif [ ! -d "$ds" ]; then
+        echo "dataset $ds - disqualified; not a directory"
+    elif [ -e "${base}.tgz" ]; then
+        echo "dataset $ds - skipping; conflicting target tarball ${base}.tgz exists"
+    elif [ -e "${base}.log" ]; then
+        echo "dataset $ds - skipping; conflicting target logfile ${base}.log exists"
+    else
+        sizedataset $ds
+        packdataset $ds
+    fi
+}
+
+
+for ds in $*; do
+    packit $ds
+    echo
+done
