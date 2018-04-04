@@ -1,0 +1,53 @@
+#!/bin/bash
+########################################################################
+# Use Case:
+#    A sync, specifically "aws s3 sync", is being used to transfer
+#    a subset of the files in a large directory hierarchy.  Due to
+#    multiple factors, but principally because < 10% of files are being
+#    transferred and a number of directories are being traversed for no
+#    reason, the sync's perform extremely slowly.
+# Considerations in developing a solution:
+#  - A simple shell treatment is used to skip files not of interest.
+#  - Files of sufficient size are expensive to duplicate, so hard links
+#    are used to avoid duplication of content.
+########################################################################
+
+if [ -z "$1" -o -z "$2" ]; then
+    echo "usage: $0 <from-dir> <to-s3-prefix>"
+    exit
+fi
+
+fromdir=$1
+tos3prefix=$2
+
+if [ ! -d $fromdir ]; then
+    echo "source directory $fromdir not found"
+    exit
+fi
+
+# NOTE:  This will break if $fromdir ends in a /
+xfrdir="${fromdir}-temp-transfer"
+rm -fr $xfrdir
+mkdir $xfrdir
+
+echo "Transferring from:   $fromdir"
+echo "temp image here:     $xfrdir"
+echo "Transferring to:     $tos3prefix"
+
+# assuming safe to get rid of previous broken attempt
+
+# Select files required as efficiently as possible
+for file in ${fromdir}/*.bam; do
+    ln $file $xfrdir
+done
+
+# Upload the selected content:
+# (running 3 times to catch/correct for any glitch in file transfer)
+synccmd="aws s3 sync --sse AES256 $xfrdir $tos3prefix"
+$synccmd
+$synccmd
+# consider checking return code, particularly of last one
+$synccmd
+
+# remove the temporary dir
+rm -fr $xfrdir

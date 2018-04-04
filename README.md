@@ -31,9 +31,12 @@ Driving issues which impacted the design of these tools:
 
 These tools have been developed to be used by unix-like shells, so unix,
 linux, mac, cygwin.  Software dependencies will include minimal unix
-tools, plus heavier weight tools including:
+tools, plus heavier weight tools (meaning you might need to install
+packages on a minimal system) including:
 
     perl
+    python
+    awscli
 
 Note: at this time, the tools presume that all included tools and
 dependencies listed above are required to be in the user's path.
