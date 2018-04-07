@@ -41,3 +41,9 @@ packages on a minimal system) including:
 
 Note: at this time, the tools presume that all included tools and
 dependencies listed above are required to be in the user's path.
+
+### Testing
+
+The testing suite is in development.  Presently this is required to be
+run from the top level dstools directory like this:
+     .../dstools>      tests/run-tests
