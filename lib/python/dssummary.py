@@ -1,4 +1,6 @@
-import sys, re
+import sys, os, re
+
+import hrunits
 
 
 
@@ -15,8 +17,10 @@ def _summarize_s3(loc):
     # >>>    Total Size: 383037453399
 
     (nbytes, nfiles, errmessage) = (-1, -1, "")
-    cmd = "aws s3 ls --recursive --summarize {0}".format(loc)
-    os.system(cmd)
+    errmessage = "--not-yet-implemented--"
+
+#   cmd = "aws s3 ls --recursive --summarize {0}".format(loc)
+#   os.system(cmd)
 # ..... WORKING HERE ....
 #     my @alloutput = `$cmd`;
 #     if (!$?) {
@@ -35,34 +39,29 @@ def _summarize_s3(loc):
 def _summarize_local_path(loc):
     "compute aggregate size of files for local server path"
     (nbytes, nfiles, errmessage) = (-1, -1, "")
-#     ... TO BE INTEGRATED ...
-#         if (-f $loc) {
-#             $nfiles = 1;
-#             $nbytes = -s $loc;
-#             $found = 1;
-#         } elsif (-d $loc) {
-#             # cd /my-path
-#             # find my-project/ -type f | xargs wc -c
-#             # find my-project/ -type f | wc -l
-#             my $dir = File::Spec->rel2abs($loc);
-#             $dir =~ s#/+$##;    # remove trailing slashes
-#             my ($name,$path) = fileparse($dir);
-#             chdir $path || die "could not chdir";
-#             my @filelist = `find $name -path $name/.snapshot -prune -o -type f -print`;
-#             chomp @filelist;
-# 
-#             $nbytes = 0;
-#             foreach my $f (@filelist) {
-#                $nbytes += -s $f;
-#             }
-# 
-#             $nfiles = scalar @filelist;
-#             $found = 1;
-#       } elsif (! -e $loc) {
-#           $found = 0;
-#       } else {
-#           die "file type not supported\n";
+    if (not os.path.exists(loc)):
+        errmessage = "--not-found--"
+    elif (os.path.isfile(loc)):
+        nfiles = 1
+        nbytes = os.path.getsize(loc)
+    elif (os.path.isdir(loc)):
+        errmessage = "--not-yet-implemented--"
+#       # cd /my-path
+#       # find my-project/ -type f | xargs wc -c
+#       # find my-project/ -type f | wc -l
+#       my $dir = File::Spec->rel2abs($loc);
+#       $dir =~ s#/+$##;    # remove trailing slashes
+#       my ($name,$path) = fileparse($dir);
+#       chdir $path || die "could not chdir";
+#       my @filelist = `find $name -path $name/.snapshot -prune -o -type f -print`;
+#       chomp @filelist;
+#       $nbytes = 0;
+#       foreach my $f (@filelist) {
+#          $nbytes += -s $f;
 #       }
+#       $nfiles = scalar @filelist;
+    else:
+        errmessage = "--non-standard-file-type--"
     return (nbytes, nfiles, errmessage)
 
 
