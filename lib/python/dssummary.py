@@ -1,4 +1,5 @@
 import sys, os, re
+import subprocess
 
 import hrunits
 
@@ -33,7 +34,6 @@ def _summarize_s3(loc):
 #     }
 #     $found = 1;
     return (nbytes, nfiles, errmessage)
- 
 
 
 def _summarize_local_path(loc):
@@ -45,21 +45,15 @@ def _summarize_local_path(loc):
         nfiles = 1
         nbytes = os.path.getsize(loc)
     elif (os.path.isdir(loc)):
-        errmessage = "--not-yet-implemented--"
-#       # cd /my-path
-#       # find my-project/ -type f | xargs wc -c
-#       # find my-project/ -type f | wc -l
-#       my $dir = File::Spec->rel2abs($loc);
-#       $dir =~ s#/+$##;    # remove trailing slashes
-#       my ($name,$path) = fileparse($dir);
-#       chdir $path || die "could not chdir";
-#       my @filelist = `find $name -path $name/.snapshot -prune -o -type f -print`;
-#       chomp @filelist;
-#       $nbytes = 0;
-#       foreach my $f (@filelist) {
-#          $nbytes += -s $f;
-#       }
-#       $nfiles = scalar @filelist;
+        absdir = os.path.abspath(loc)
+        findproc = subprocess.Popen(["find",absdir,"-type","f"], stdout=subprocess.PIPE)
+        output = findproc.communicate()[0].splitlines()
+        findproc.wait()
+        nbytes = 0
+        nfiles = 0
+        for file in output:
+            nbytes += os.path.getsize(file)
+            nfiles += 1
     else:
         errmessage = "--non-standard-file-type--"
     return (nbytes, nfiles, errmessage)
