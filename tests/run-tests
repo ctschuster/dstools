@@ -1,8 +1,10 @@
 #!/bin/bash
 
+testingoptions=$*
+
 # The testing suite is in development.  Presently this is required to be
 # run from the top level dstools directory like this:
 #      .../dstools>      tests/run-tests
 export PYTHONPATH="lib/python"
 
-python3 -m unittest -v tests/*.py
+python3 -m unittest $testingoptions tests/*.py
