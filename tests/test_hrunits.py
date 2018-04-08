@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import sys, unittest
-sys.path.append('python-lib')
 
 import hrunits
 

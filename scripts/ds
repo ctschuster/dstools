@@ -9,6 +9,7 @@ sys.path.append(pythonlibs)
 
 import dsdocs
 import dssummary
+import dscheck
 
 
 
@@ -20,16 +21,18 @@ if (len(sys.argv) == 1):
     dsdocs.show_usage(prog, "")
     sys.exit(0)
 mode = sys.argv[1]
+
 modeargs = sys.argv
 del modeargs[0]
 del modeargs[0]
 
-
 if (mode == "summary"):
-    if (len(modeargs) != 0):
-        for loc in modeargs:
-            dssummary.summary(loc)
-    else:
-        print("no targets specified")
+    dssummary.execute_summary(modeargs)
+elif (mode == "check"):
+    dscheck.execute_check(modeargs)
+elif (mode == "pack"):
+    dspack.execute_pack(modeargs)
+elif (mode == "normalize"):
+    dsnormalize.execute_normalize(modeargs)
 else:
     dsdocs.show_usage(prog, "mode '{}' not recognized".format(mode))

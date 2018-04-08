@@ -60,10 +60,9 @@ def _summarize_local_path(loc):
 
 
 # loc argument to this function will be of the form:
+# - /my-abs-path/my-dataset        (relative paths supported)
 # - s3://my-bucket/my-dataset
-# - /my-abs-path/my-dataset
-# - tbd - verify functionality of relative paths
-def summary(loc):
+def single_summary(loc):
     "summarize dataset in nbytes/nfiles"
     if (re.match("s3://", loc)  or  re.match("S3://", loc)):
         (nbytes, nfiles, errmessage) = _summarize_s3(loc)
@@ -79,3 +78,12 @@ def summary(loc):
             errmessage = "--failed-reason-unknown--"
         print("{0}  {1}".format(errmessage, loc))
     return
+
+
+
+def execute_summary(modeargs):
+    if (len(modeargs) != 0):
+        for loc in modeargs:
+            single_summary(loc)
+    else:
+        print("no targets specified")

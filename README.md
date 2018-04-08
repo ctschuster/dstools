@@ -3,15 +3,18 @@
 ### Overview
 
 This toolset is intended to solve some practical problems in managing
-bulk data storage.  The tools included will generally be scripts and
-should not require any build process.  The goal is to make management
-of datasets between unix, s3 and perhaps other storage platforms
-simpler and the transfer of data more efficient / reliable /
+bulk data storage and transmission.  The tools included will generally
+be scripts and should not require any build process.  The goal is to
+make management of datasets between unix, s3 and perhaps other storage
+platforms simpler and the transfer of data more efficient / reliable /
 verifiable.
 
 ### Synopsis
 
-    ds-summary [ <s3-prefix> | <dir-path> ] [...]
+    ds summary    <s3-prefix>|<dir-path> [...]
+    ds check      <archive-file> [...]
+    ds pack       [-ri] <dir> [...]
+    ds normalize  [-r] <file>|<path> [...]
 
 ### Considerations
 
