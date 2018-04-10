@@ -41,6 +41,8 @@ def _summarize_local_path(loc):
     (nbytes, nfiles, errmessage) = (-1, -1, "")
     if (not os.path.exists(loc)):
         errmessage = "--not-found--"
+    elif (os.path.islink(loc)):
+        errmessage = "--non-standard-file-type--"
     elif (os.path.isfile(loc)):
         nfiles = 1
         nbytes = os.path.getsize(loc)
@@ -67,12 +69,20 @@ def single_summary(loc):
     if (re.match("s3://", loc)  or  re.match("S3://", loc)):
         (nbytes, nfiles, errmessage) = _summarize_s3(loc)
     else:
+        loc    = os.path.normpath(loc)
         (nbytes, nfiles, errmessage) = _summarize_local_path(loc)
+
+    if (not os.path.isabs(loc)):
+        wd     = os.getcwd()
+        absloc = os.path.abspath(loc)
+        locstr = "{0} ({1}, relative to {2})".format(absloc, loc, wd)
+    else:
+        locstr = loc
 
     if (nbytes >= 0  and nfiles >= 0):
         sizestr_dec = hrunits.getSizeStringBytesDecimal(nbytes)
         sizestr_bin = hrunits.getSizeStringBytesBinary(nbytes)
-        print("{0}  ({1}, {2})  {3}  {4}".format(nbytes, sizestr_dec, sizestr_bin, nfiles, loc))
+        print("{0}  ({1}, {2})  {3}  {4}".format(nbytes, sizestr_dec, sizestr_bin, nfiles, locstr))
     else:
         if (len(errmessage) == 0):
             errmessage = "--failed-reason-unknown--"

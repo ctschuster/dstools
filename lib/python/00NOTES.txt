@@ -1,0 +1,11 @@
+Notes on AWS S3:
+    https://docs.aws.amazon.com/AmazonS3/latest/dev/BucketRestrictions.html
+    https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html
+    https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingObjects.html
+
+Per UsingMetadata article above, object key names can be any UTF-8
+characters upto 1024 characters long.  These characters are generally safe
+for use in keynames:
+
+    Alphanumeric characters [0-9a-zA-Z]
+    Special characters !, -, _, ., *, ', (, and ) 
