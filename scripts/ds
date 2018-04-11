@@ -7,9 +7,12 @@ import sys, os, string
 pythonlibs = '{}/../lib/python'.format(os.path.dirname(sys.argv[0]))
 sys.path.append(pythonlibs)
 
-import dsdocs
 import dssummary
+import dsnormalize
+import dspack
 import dscheck
+
+import dsdocs
 
 
 
@@ -28,11 +31,11 @@ del modeargs[0]
 
 if (mode == "summary"):
     dssummary.execute_summary(modeargs)
-elif (mode == "check"):
-    dscheck.execute_check(modeargs)
-elif (mode == "pack"):
-    dspack.execute_pack(modeargs)
 elif (mode == "normalize"):
     dsnormalize.execute_normalize(modeargs)
+elif (mode == "pack"):
+    dspack.execute_pack(modeargs)
+elif (mode == "check"):
+    dscheck.execute_check(modeargs)
 else:
     dsdocs.show_usage(prog, "mode '{}' not recognized".format(mode))
