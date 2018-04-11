@@ -67,17 +67,32 @@ class test_dsnormalize(unittest.TestCase):
         dir1         = "{}/first 1st/ second 2nd/tier#3/ next4@".format(testdir)
         dir1expected = "{}/first-1st/second-2nd/tier3/next4".format(testdir)
         os.makedirs(dir1)
-        file1 = "{}/ : 1Bc ^ & 540(3)   ".format(dir1)
-        file2 = "{}/  ? 2Bc ^ & 540(3) +-X  ".format(dir1)
+        file1 = "{}/ y: 1Bc ^ & 540(3)   ".format(dir1)
+        file2 = "{}/ z ? 2Bc ^ & 540(3) +-X  ".format(dir1)
         touchfile(file1)
         touchfile(file2)
-        file1expected = "{}/-1bc---540(3)".format(dir1)
-        file2expected = "{}/-2bc---540(3)--x".format(dir1)
+        file1expected = "{}/y-1bc---540(3)".format(dir1expected)
+        file2expected = "{}/z--2bc---540(3)--x".format(dir1expected)
         dsnormalize.normalize_recursive(testdir)
         self.assertEqual(os.path.exists(file1),         False)
         self.assertEqual(os.path.exists(file2),         False)
         self.assertEqual(os.path.exists(file1expected), True)
         self.assertEqual(os.path.exists(file2expected), True)
+
+        # cleanup testing dir
+        rmtree(testdir)
+
+    def test_non_overwrite(self):
+        "test non-overwrite"
+        testdir = tempfile.mkdtemp()
+
+        file1 = "{}/MyFile1.txt".format(testdir)
+        file2 = "{}/myfile1.txt".format(testdir)
+        touchfile(file1)
+        touchfile(file2)
+        dsnormalize.normalize_recursive(testdir)
+        self.assertEqual(os.path.exists(file1),         True)
+        self.assertEqual(os.path.exists(file2),         True)
 
         # cleanup testing dir
         rmtree(testdir)

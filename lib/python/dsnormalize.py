@@ -1,6 +1,9 @@
 import sys, os, re, errno
+import argparse
 import subprocess
 
+
+verbose = False
 
 
 def normalize_entry_name(namestr):
@@ -22,12 +25,14 @@ def normalize_single_file(loc):
         if (myfile != myfilenew):
             newfile = "{0}/{1}".format(mydir, myfilenew)
             if (not os.path.exists(newfile)):
-                print("{0}:  '{1}' ===> '{2}'".format(mydir,myfile,myfilenew))
+                if (verbose):
+                    print("{0}:  '{1}' ===> '{2}'".format(mydir,myfile,myfilenew))
                 os.rename(loc,newfile)
                 return newfile
             else:
-                print("{0}:  '{1}' =X=> '{2}'  Collision - target file exists"
-                      .format(mydir,myfile,myfilenew))
+                if (verbose):
+                    print("{0}:  '{1}' =X=> '{2}'  Collision - target file exists"
+                          .format(mydir,myfile,myfilenew))
         return loc
     return
 
@@ -39,8 +44,19 @@ def normalize_recursive(loc):
             normalize_recursive("{0}/{1}".format(newloc,file))
 
 def execute_normalize(modeargs):
-    if (len(modeargs) != 0):
-        for loc in modeargs:
+    list = modeargs
+
+#     parser = argparse.ArgumentParser()
+#     parser.add_argument("-v", "--verbose",
+#                         help="show verbose output",
+#                         action="store_true")
+#     (args,list) = parser.parse_known_args()
+#     if args.verbose:
+#         verbose = True
+#     print(list)
+
+    if (len(list) != 0):
+        for loc in list:
             loc = os.path.normpath(loc)
             if (not os.path.exists(loc)):
                 print("not found - '{0}'".format(loc))
