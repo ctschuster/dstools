@@ -12,24 +12,9 @@ verifiable.
 ### Synopsis
 
     ds summary    <s3-prefix>|<dir-path> [...]
-    ds check      <archive-file> [...]
-    ds pack       [-ri] <dir> [...]
     ds normalize  [-r] <file>|<path> [...]
-
-### Considerations
-
-This was written based upon a need to deal with issue involving:
- * archiving & long-term storage
- * migration of data
- * treatment of unstructured data
- * tolerating lossy data transfer mechanisms
-
-Driving issues which impacted the design of these tools:
- * data file count
-   * high file count tends to slow storage activities
- * portability issues
-   * links, hard and soft, are not handled well in the general case
-   * simple treatment of filenames to improve portability/usability
+    ds pack       [-ri] <dir> [...]
+    ds check      <archive-file> [...]
 
 ### Requirements
 
@@ -45,8 +30,27 @@ packages on a minimal system) including:
 Note: at this time, the tools presume that all included tools and
 dependencies listed above are required to be in the user's path.
 
+### Tool Development Considerations
+
+This was written based upon a need to deal with issue involving:
+ * archiving & long-term storage
+ * migration of data
+ * treatment of unstructured data
+ * tolerating lossy data transfer mechanisms
+
+Driving issues which impacted the design of these tools:
+ * data file count
+   * high file count tends to slow storage activities
+ * portability issues
+   * links, hard and soft, are not handled well in the general case
+   * simple treatment of filenames to improve portability/usability
+
 ### Testing
 
 The testing suite is in development.  Presently this is required to be
 run from the top level dstools directory like this:
      .../dstools>      tests/run-tests
+
+### Author
+
+Christopher Schuster <chris@schuster.io>
