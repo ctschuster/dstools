@@ -91,9 +91,10 @@ def single_summary(loc):
 
 
 
-def execute_summary(modeargs):
-    if (len(modeargs) != 0):
-        for loc in modeargs:
+def execute_summary(options):
+    list = options['targets']
+    if (len(list) != 0):
+        for loc in list:
             single_summary(loc)
     else:
         print("no targets specified")

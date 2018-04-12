@@ -4,14 +4,14 @@ import sys, io, os, tempfile
 import unittest
 from shutil import rmtree
 
-import dssummary
+import ds_summary
 
 
 
-def run_dssummary(file):
+def run_ds_summary(file):
     backup = sys.stdout
     sys.stdout = io.StringIO()
-    dssummary.single_summary(file)
+    ds_summary.single_summary(file)
     out = sys.stdout.getvalue()
     sys.stdout.close()
     sys.stdout = backup
@@ -22,14 +22,14 @@ def run_dssummary(file):
 
 class TestDssummary(unittest.TestCase):
     """
-    Tests for dssummary
+    Tests for ds_summary
     """
 
-    def test_dssummary(self):
+    def test_ds_summary(self):
         # test handling of missing files
         backup = sys.stdout
         sys.stdout = io.StringIO()                 # capture output
-        dssummary.single_summary("no-such-file")
+        ds_summary.single_summary("no-such-file")
         out = sys.stdout.getvalue()                # release output
         sys.stdout.close()                         # close the stream
         sys.stdout = backup                        # restore original stdout
@@ -38,7 +38,7 @@ class TestDssummary(unittest.TestCase):
 
         # create a testing area
         testdir = tempfile.mkdtemp()
-        (nbytes, nfiles, name) = run_dssummary(testdir)
+        (nbytes, nfiles, name) = run_ds_summary(testdir)
         self.assertEqual(int(nbytes), 0)
         self.assertEqual(int(nfiles), 0)
         self.assertEqual(name, testdir)
@@ -48,7 +48,7 @@ class TestDssummary(unittest.TestCase):
         subdir2 = "{0}/{1}".format(testdir,"dir2")
         os.mkdir(subdir1)
         os.mkdir(subdir2)
-        (nbytes, nfiles, name) = run_dssummary(testdir)
+        (nbytes, nfiles, name) = run_ds_summary(testdir)
         self.assertEqual(int(nbytes), 0)
         self.assertEqual(int(nfiles), 0)
         self.assertEqual(name, testdir)
@@ -62,7 +62,7 @@ class TestDssummary(unittest.TestCase):
         stray_symlink = "{0}/{1}".format(testdir,"mysymlink")
         os.symlink(testdir, stray_symlink)
 
-        (nbytes, nfiles, name) = run_dssummary(testdir)
+        (nbytes, nfiles, name) = run_ds_summary(testdir)
         self.assertEqual(int(nbytes), 11)
         self.assertEqual(int(nfiles), 1)
         self.assertEqual(name, testdir)
@@ -70,7 +70,7 @@ class TestDssummary(unittest.TestCase):
         # test that sym links are rejected:
         backup = sys.stdout
         sys.stdout = io.StringIO()                 # capture output
-        dssummary.single_summary(stray_symlink)
+        ds_summary.single_summary(stray_symlink)
         out = sys.stdout.getvalue()                # release output
         sys.stdout.close()                         # close the stream
         sys.stdout = backup                        # restore original stdout
@@ -79,7 +79,7 @@ class TestDssummary(unittest.TestCase):
 
         # Test single file
         (nbytes, nfiles, name) = (0,0,0)
-        (nbytes, nfiles, name) = run_dssummary(hellofile)
+        (nbytes, nfiles, name) = run_ds_summary(hellofile)
         self.assertEqual(int(nbytes), 11)
         self.assertEqual(int(nfiles), 1)
         self.assertEqual(name, hellofile)

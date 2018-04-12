@@ -1,41 +1,30 @@
 #!/usr/bin/env python3
 
-
-
 import sys, os, string
 
 pythonlibs = '{}/../lib/python'.format(os.path.dirname(sys.argv[0]))
 sys.path.append(pythonlibs)
 
-import dssummary
-import dsnormalize
-import dspack
-import dscheck
+import ds_opts
 
-import dsdocs
+import ds_summary
+import ds_normalize
+import ds_pack
+import ds_check
 
 
 
-prog = os.path.basename(sys.argv[0])
 if sys.version_info[0] < 3:
     print("requires python version 3.0 or later")
     exit()
-if (len(sys.argv) == 1):
-    dsdocs.show_usage(prog, "")
-    sys.exit(0)
-mode = sys.argv[1]
 
-modeargs = sys.argv
-del modeargs[0]
-del modeargs[0]
+options = ds_opts.process_args()
 
-if (mode == "summary"):
-    dssummary.execute_summary(modeargs)
-elif (mode == "normalize"):
-    dsnormalize.execute_normalize(modeargs)
-elif (mode == "pack"):
-    dspack.execute_pack(modeargs)
-elif (mode == "check"):
-    dscheck.execute_check(modeargs)
-else:
-    dsdocs.show_usage(prog, "mode '{}' not recognized".format(mode))
+if (options['mode'] == "summary"):
+    ds_summary.execute_summary(options)
+elif (options['mode'] == "normalize"):
+    ds_normalize.execute_normalize(options)
+elif (options['mode'] == "pack"):
+    ds_pack.execute_pack(options)
+elif (options['mode'] == "check"):
+    ds_check.execute_check(options)
