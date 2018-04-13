@@ -3,6 +3,9 @@ import argparse
 import subprocess
 
 
+# Testing deficiency:
+# - Should test the output in verbose modes 0 & 1 & 2
+
 
 def normalize_entry_name(namestr):
     "returns a 'cleaner' name; use only on filename or single dirname, not a path"
@@ -15,43 +18,40 @@ def normalize_entry_name(namestr):
     namestr = p.sub('', namestr)
     return namestr
 
-def normalize_single_file(loc):
-    global verbosity
-    if (os.path.exists(loc)):
-        mydir     = os.path.dirname(loc)
-        myfile    = os.path.basename(loc)
-        myfilenew = normalize_entry_name(myfile)
-        if (myfile != myfilenew):
-            newfile = "{0}/{1}".format(mydir, myfilenew)
-            if (not os.path.exists(newfile)):
-                if (verbosity==2):
-                    print("{0}:  '{1}' ===> '{2}'".format(mydir,myfile,myfilenew))
-                os.rename(loc,newfile)
-                return newfile
-            else:
-                if (verbosity>=1):
-                    print("{0}:  '{1}' =X=> '{2}'  Collision - target file exists"
-                          .format(mydir,myfile,myfilenew))
-        return loc
-    return
-
-def normalize_recursive(loc):
-    newloc = normalize_single_file(loc)
-    if (newloc  and  not os.path.islink(newloc)  and  os.path.isdir(newloc)):
-        filesindir = os.listdir(newloc)
-        for file in filesindir:
-            normalize_recursive("{0}/{1}".format(newloc,file))
 
 def execute_normalize(options):
-    global verbosity
-    verbosity = options['verbosity']
-    list      = options['targets']
-    if (len(list) != 0):
-        for loc in list:
+    def normalize_single_file(loc):
+        if (os.path.exists(loc)):
+            mydir     = os.path.dirname(loc)
+            myfile    = os.path.basename(loc)
+            myfilenew = normalize_entry_name(myfile)
+            if (myfile != myfilenew):
+                newfile = "{0}/{1}".format(mydir, myfilenew)
+                if (not os.path.exists(newfile)):
+                    if (options['verbosity']==2):
+                        print("{0}:  '{1}' ===> '{2}'".format(mydir,myfile,myfilenew))
+                    os.rename(loc,newfile)
+                    return newfile
+                else:
+                    if (options['verbosity']>=1):
+                        print("{0}:  '{1}' =X=> '{2}'  Collision - target file exists"
+                              .format(mydir,myfile,myfilenew))
+            return loc
+
+    def normalize_recursive(loc):
+        newloc = normalize_single_file(loc)
+        if (newloc  and  not os.path.islink(newloc)  and  os.path.isdir(newloc)):
+            filesindir = os.listdir(newloc)
+            for file in filesindir:
+                normalize_recursive("{0}/{1}".format(newloc,file))
+
+    if (len(options['targets']) != 0):
+        for loc in options['targets']:
             loc = os.path.normpath(loc)
             if (not os.path.exists(loc)):
-                print("not found - '{0}'".format(loc))
-                sys.exit(errno.ENOENT)
+                if (options['verbosity']>=0):
+                    print("not found - '{0}'".format(loc))
+                raise FileNotFoundError
             if(options['recursive']):
                 normalize_recursive(loc)
             else:

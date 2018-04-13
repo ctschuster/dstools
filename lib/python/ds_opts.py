@@ -10,7 +10,7 @@ def show_usage(prog, errorstr):
 
 def process_args():
 
-    options = { 'rawlist' : sys.argv, 'prog' : os.path.basename(sys.argv[0]) }
+    options = { 'prog' : os.path.basename(sys.argv[0]) }
     if (len(sys.argv) == 1):
         show_usage(options['prog'], "")
         sys.exit(0)
@@ -32,15 +32,14 @@ def process_args():
     parser.add_argument("-r", "--recursive",
                         help="recursive",
                         action="store_true")
-    (parsed_args,list) = parser.parse_known_args()
-    (options['parsed_args'], options['targets']) = (parsed_args, list)
+    (parsed_args, options['targets']) = parser.parse_known_args()
 
     if (parsed_args.verbose is not None):
         options['verbosity'] = parsed_args.verbose
     else:
         options['verbosity'] = 0
     if (parsed_args.quiet):
-        options['verbosity'] = 0
+        options['verbosity'] = -1
     if (parsed_args.recursive):
         options['recursive'] = True
     else:
