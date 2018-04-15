@@ -9,6 +9,7 @@ import ds_opts
 
 import ds_summary
 import ds_normalize
+import ds_flatten
 import ds_pack
 import ds_check
 
@@ -24,6 +25,8 @@ if (options['mode'] == "summary"):
     ds_summary.execute_summary(options)
 elif (options['mode'] == "normalize"):
     ds_normalize.execute_normalize(options)
+elif (options['mode'] == "flatten-links"):
+    ds_flatten.execute_flatten(options)
 elif (options['mode'] == "pack"):
     ds_pack.execute_pack(options)
 elif (options['mode'] == "check"):

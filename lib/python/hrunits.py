@@ -1,5 +1,9 @@
+########################################################################
+# hrutils.py
+########################################################################
 # Reference:
 #     https://en.wikipedia.org/wiki/Kilobyte
+########################################################################
 
 # intended on to be used with base = 1000 or 1024
 def _computeSizeOrder(nbytes,base,symbols):

@@ -1,3 +1,6 @@
+########################################################################
+# ds_opts.py
+########################################################################
 import sys, os, argparse
 
 
@@ -17,7 +20,7 @@ def process_args():
 
     options['mode'] = sys.argv[1]
     del sys.argv[1];
-    if (options['mode'] not in ['summary', 'normalize', 'pack', 'check']):
+    if (options['mode'] not in ['summary', 'normalize', 'flatten-links', 'pack', 'check']):
         show_usage(options['prog'], "mode '{}' not recognized".format(mode))
         sys.exit(1)
 
@@ -32,17 +35,24 @@ def process_args():
     parser.add_argument("-r", "--recursive",
                         help="recursive",
                         action="store_true")
+    parser.add_argument("--remove",
+                        help="remove if pack succeeds",
+                        action="store_true")
     (parsed_args, options['targets']) = parser.parse_known_args()
 
     if (parsed_args.verbose is not None):
-        options['verbosity'] = parsed_args.verbose
+        options['verbose']   = parsed_args.verbose
     else:
-        options['verbosity'] = 0
+        options['verbose']   = 0
     if (parsed_args.quiet):
-        options['verbosity'] = -1
+        options['verbose']   = -1
     if (parsed_args.recursive):
         options['recursive'] = True
     else:
         options['recursive'] = False
+    if (parsed_args.remove):
+        options['remove']    = True
+    else:
+        options['remove']    = False
 
     return options

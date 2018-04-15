@@ -11,5 +11,6 @@ test-verbose:
 	@tests/run-tests -v
 
 clean:
-	@echo "Cleaning up python cache directories"
+	@echo "Cleaning up python cache files/directories"
 	@/bin/find * -name __pycache__ | xargs /bin/rm -fr
+	@/bin/find * -name \*.py'[cdo]' | xargs /bin/rm -f
