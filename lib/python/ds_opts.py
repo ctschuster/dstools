@@ -8,7 +8,14 @@ import sys, os, argparse
 def show_usage(prog, errorstr):
     if (len(errorstr) > 0):
         print("ERROR:  {}".format(errorstr))
-    print("usage:  {} summary <dir>|<s3prefix> [...]".format(prog))
+    print("usage:  {} <mode> <mode-arguments>".format(prog))
+    print("    {} summary             <dir>|<s3prefix> [...]".format(prog))
+    print("    ... summary support for s3 still under dev ...")
+    print("    {} normalize [-rv]     <file-or-dir>    [...]".format(prog))
+    print("    {} flatten-links [-rv] <file-or-dir>    [...]".format(prog))
+    print("    ... these still in work ...")
+    print("    {} pack [--remove]     <dir>            [...]".format(prog))
+    print("    {} check               <packed-tgz>     [...]".format(prog))
 
 
 def process_args():

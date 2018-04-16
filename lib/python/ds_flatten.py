@@ -24,7 +24,7 @@ def execute_flatten(options):
 
             os.unlink(loc)
             ds_util.touchfile(loc)
-            ds_util.rename(loc, newloc, { 'verbose' : options['verbose'] })
+            ds_util.rename(loc, newloc, { 'verbose' : options['verbose'] if ('verbose' in options) else 0 })
 
     def flatten_recursive(loc):
         if (os.path.islink(loc)):
@@ -38,10 +38,10 @@ def execute_flatten(options):
         for loc in options['targets']:
             loc = os.path.normpath(loc)
             if (not os.path.exists(loc) and not os.path.islink(loc)):
-                if (options['verbose'] >= 0):
+                if ('verbose' not in options  or  options['verbose'] >= 0):
                     print("not found - '{0}'".format(loc))
                 raise FileNotFoundError
-            if(options['recursive']):
+            if('recursive' in options  and  options['recursive']):
                 flatten_recursive(loc)
             else:
                 flatten_link(loc)
