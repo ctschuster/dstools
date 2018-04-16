@@ -2,11 +2,10 @@
 # ds_pack.py
 ########################################################################
 import sys, os, re
+import socket
 from datetime import datetime
 import subprocess
 
-
-# .... in work ....
 
 
 def execute_pack(options):
@@ -24,95 +23,108 @@ def execute_pack(options):
 
 
     def _packit(ds):
-        def _pack_step1(ds):
-            "generate summary / sizing info"
-#           ds=$1
-#           dir=`dirname $ds`
-#           base=`basename $ds`
-#           echo "[`date +'%F %T'`]  Sizing content $ds from server `hostname`" | tee ${base}.log
-#           echo "PWD:      $PWD"
-#           echo "dataset:  $ds"
-#           cmd="df -hP $ds"
-#           echo "File system info:" | tee -a ${base}.log
-#           echo ">> $cmd" | tee -a ${base}.log
-#           $cmd | tee -a ${base}.log
-#           cmd="ds-summary $ds"
-#           echo "Dataset rough stats (shown: #bytes #files <dataset>)" | tee -a ${base}.log
-#           echo ">> $cmd" | tee -a ${base}.log
-#           $cmd | tee -a ${base}.log
+        def _pack_step1(dsdict):
+            "generate header info"
+            timestamp = _compact_iso8601_now_string()
+            print("[{0}]  Dataset:  {1}".format(timestamp, dsdict['ds']))
+            if (not os.path.isabs(dsdict['ds'])):
+                print("[{0}]  AbsPath:  {1}".format(timestamp, dsdict['absds']))
+            print("[{0}]  Server:   {1}".format(timestamp, socket.gethostname()))
 
+            # cmd="df -hP $ds"
+            # echo "File system info:" | tee -a ${base}.log
+            # echo ">> $cmd" | tee -a ${base}.log
+            # $cmd | tee -a ${base}.log
+            # cmd="ds-summary $ds"
+            # echo "Dataset rough stats (shown: #bytes #files <dataset>)" | tee -a ${base}.log
+            # echo ">> $cmd" | tee -a ${base}.log
+            # $cmd | tee -a ${base}.log
 
-        def _pack_step2(ds):
+        def _pack_step2(dsdict):
             "generate tarball"
-#           ds=$1
-#           dir=`dirname $ds`
-#           base=`basename $ds`
-#           logfile="${base}.log"
-#           tarfile="${base}.tgz"
-#           echo "[`date +'%F %T'`]  Generating tarball of $ds on server `hostname`" > $logfile
-#           ( cd $dir && tar cvfz - --exclude-backups --exclude=.snapshot $opts ${base} ) > $tarfile 2>> $logfile
-#           ret1=$?
-#           if [ $ret1 = 0 ]; then
-#               status=success
-#           else
-#               status=failure
-#           fi
-#           echo "[`date +'%F %T'`]  Tarball completion: $status" | tee -a $logfile
-        
+            print("step2:")
+            # ds=$1
+            # dir=`dirname $ds`
+            # base=`basename $ds`
+            # logfile="${base}.log"
+            # tarfile="${base}.tgz"
+            # echo "[`date +'%F %T'`]  Generating tarball of $ds on server `hostname`" > $logfile
+            # ( cd $dir && tar cvfz - --exclude-backups --exclude=.snapshot $opts ${base} ) > $tarfile 2>> $logfile
+            # ret1=$?
+            # if [ $ret1 = 0 ]; then
+            #     status=success
+            # else
+            #     status=failure
+            # fi
+            # echo "[`date +'%F %T'`]  Tarball completion: $status" | tee -a $logfile
 
-        def _pack_step3(ds):
+        def _pack_step3(dsdict):
             "show tarball contents"
-#           echo "[`date +'%F %T'`]  Generating file list" | tee -a $logfile
-#           tar tvfz $tarfile 2>&1 >> $logfile
-#           ret2=$?
-#           if [ $ret2 = 0 ]; then
-#               status=success
-#           else
-#               status=failure
-#           fi
-#           echo "[`date +'%F %T'`]  Tarball listing: $status" | tee -a $logfile
-        
+            print("step3:")
+            # echo "[`date +'%F %T'`]  Generating file list" | tee -a $logfile
+            # tar tvfz $tarfile 2>&1 >> $logfile
+            # ret2=$?
+            # if [ $ret2 = 0 ]; then
+            #     status=success
+            # else
+            #     status=failure
+            # fi
+            # echo "[`date +'%F %T'`]  Tarball listing: $status" | tee -a $logfile
 
-        def _pack_step4(ds):
+
+        def _pack_step4(dsdict):
             "contruct checksum & closing info"
-#           md5=`md5sum $tarfile | awk '{print $1}'`
-#           size=`ls -l $tarfile | awk '{print $5}'`
-#           if [ $ret1 = 0 -a $ret2 = 0 -a $size -gt 0 ]; then
-#               summary=PASS
-#           else
-#               summary=FAIL
-#           fi
-#           echo "[`date +'%F %T'`]  Generating checksum/summary info" | tee -a $logfile
-#           echo "[`date +'%F %T'`]  MD5:    ${md5}" | tee -a $logfile
-#           echo "[`date +'%F %T'`]  Size:   ${size} (bytes)" | tee -a $logfile
-#           echo "[`date +'%F %T'`]  Summary $tarfile - ${summary}" | tee -a $logfile
-        
-        def _pack_step5(ds):
-            "postprocessing - permissions & remove if specified"
-#           if [ "$USER" = "root" ]; then
-#               chmod ug+rw,o+r $tarfile $logfile
-#               chgrp TGAC $tarfile $logfile
-#           fi
-        
-#           autodelete()
+            print("step4:")
+            # md5=`md5sum $tarfile | awk '{print $1}'`
+            # size=`ls -l $tarfile | awk '{print $5}'`
+            # if [ $ret1 = 0 -a $ret2 = 0 -a $size -gt 0 ]; then
+            #     summary=PASS
+            # else
+            #     summary=FAIL
+            # fi
+            # echo "[`date +'%F %T'`]  Generating checksum/summary info" | tee -a $logfile
+            # echo "[`date +'%F %T'`]  MD5:    ${md5}" | tee -a $logfile
+            # echo "[`date +'%F %T'`]  Size:   ${size} (bytes)" | tee -a $logfile
+            # echo "[`date +'%F %T'`]  Summary $tarfile - ${summary}" | tee -a $logfile
 
+        def _pack_step5(dsdict):
+            "postprocessing - permissions & remove if specified"
+            print("step5:")
+            # if [ "$USER" = "root" ]; then
+            #     chmod ug+rw,o+r $tarfile $logfile
+            #     chgrp TGAC $tarfile $logfile
+            # fi
+            # autodelete()
 
         if (not os.path.islink(ds) and os.path.isdir(ds)):
             base = os.path.basename(ds)
+            tarfile = "{}.tgz".format(base)
+            logfile = "{}.log".format(base)
             for targetfile in [
-                "${base}.tgz",
-                "${base}.log",
-                "${base}.log.gz",
-                "${base}.log"
+                tarfile,
+                logfile,
+                "{}.log.gz".format(base)
             ]:
                 if (os.path.exists(targetfile)):
                     print("cannot pack - conflicting target file '{}'".format(targetfile))
                     raise FileExistsError
-            _pack_step1(ds)
-            _pack_step2(ds)
-            _pack_step3(ds)
-            _pack_step4(ds)
-            _pack_step5(ds)
+
+            save_stdout = sys.stdout
+            sys.stdout = open(logfile, 'w')
+            dsdict = {
+                'ds'       : ds,
+                'base'     : base,
+                'tarfile'  : tarfile,
+                'logfile'  : logfile,
+                'absds'    : os.path.abspath(ds)
+            }
+            _pack_step1(dsdict)
+            _pack_step2(dsdict)
+            _pack_step3(dsdict)
+            _pack_step4(dsdict)
+            _pack_step5(dsdict)
+            sys.stdout.close()
+            sys.stdout = save_stdout
         else:
             print("non-compliant source location '{}'".format(ds))
             raise NotADirectoryError
@@ -129,13 +141,6 @@ def execute_pack(options):
 
 
 
-# #!/bin/bash
-# ########################################################################
-# # Script:  ds-pack [-r] [-i] <dir> [<dir> ...]
-# ########################################################################
-# # This tool tarballs a dataset into the current working directory.  In
-# # so doing, it logs the original path, host executed on, whether tarball
-# # processing succeeded or failed, and the log of the tar processing.
 # ########################################################################
 # # Option:
 # #    -i   Allow tarball to succeed even if read errors occurred, such as
