@@ -16,11 +16,9 @@ def execute_normalize(options):
             myfile    = os.path.basename(loc)
             myfilenew = ds_util.normalize_name(myfile)
             if (myfile != myfilenew):
-                newfile = "{0}/{1}".format(mydir, myfilenew)
+                newfile = myfilenew if (len(mydir) == 0) else "{0}/{1}".format(mydir, myfilenew)
                 if (not os.path.exists(newfile)):
-                    if (options['verbose']==2):
-                        print("{0}:  '{1}' ===> '{2}'".format(mydir,myfile,myfilenew))
-                    os.rename(loc,newfile)
+                    ds_util.rename(loc,newfile)
                     return newfile
                 else:
                     if (options['verbose']>=1):

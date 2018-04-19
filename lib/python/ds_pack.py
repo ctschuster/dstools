@@ -3,21 +3,21 @@
 ########################################################################
 import sys, os, re
 import socket
-from datetime import datetime
 import subprocess
+import ds_summary
+import ds_util
 
 
 
 def execute_pack(options):
-    def _compact_iso8601_now_string():
-        date = datetime.now()
-        return date.__format__('%Y%m%dT%H%M%S')
+    def _now():
+        return ds_util.timestamp_iso8601_now()
 
 
     def _remove(loc):
         if (options['verbose'] > 0):
             print("deleting {}".format(loc))
-        temploc = "{0}-DELETEME-{1}".format(loc, _compact_iso8601_now_string())
+        temploc = "{0}-DELETEME-{1}".format(loc, _now())
         os.rename(loc, temploc)
         subprocess.call(["/bin/rm", "-fr", temploc])
 
@@ -25,30 +25,23 @@ def execute_pack(options):
     def _packit(ds):
         def _pack_step1(dsdict):
             "generate header info"
-            timestamp = _compact_iso8601_now_string()
-            print("[{0}]  Dataset:  {1}".format(timestamp, dsdict['ds']))
+            print("[{0}]  Dataset:  {1}".format(_now(), dsdict['ds']))
             if (not os.path.isabs(dsdict['ds'])):
-                print("[{0}]  AbsPath:  {1}".format(timestamp, dsdict['absds']))
-            print("[{0}]  Server:   {1}".format(timestamp, socket.gethostname()))
+                print("[{0}]  AbsPath:  {1}".format(_now(), dsdict['absds']))
+            print("[{0}]  Server:   {1}".format(_now(), socket.gethostname()))
 
-            # cmd="df -hP $ds"
-            # echo "File system info:" | tee -a ${base}.log
-            # echo ">> $cmd" | tee -a ${base}.log
-            # $cmd | tee -a ${base}.log
-            # cmd="ds-summary $ds"
-            # echo "Dataset rough stats (shown: #bytes #files <dataset>)" | tee -a ${base}.log
-            # echo ">> $cmd" | tee -a ${base}.log
-            # $cmd | tee -a ${base}.log
+#           subprocess.call(["df", "-hP", dsdict['ds']], stdout=sys.stdout)
+            print("[{0}]  File system info:".format(_now()))
+            (ret,output) = subprocess.getstatusoutput("df -hP {}".format(dsdict['ds']))
+            print(output)
+
+            print("[{0}]  Dataset summary:".format(_now()))
+            ds_summary.single_summary(dsdict['ds'])
+
 
         def _pack_step2(dsdict):
             "generate tarball"
-            print("step2:")
-            # ds=$1
-            # dir=`dirname $ds`
-            # base=`basename $ds`
-            # logfile="${base}.log"
-            # tarfile="${base}.tgz"
-            # echo "[`date +'%F %T'`]  Generating tarball of $ds on server `hostname`" > $logfile
+            print("[{0}]  Generating tarball:  {1}".format(_now(), dsdict['tarfile']))
             # ( cd $dir && tar cvfz - --exclude-backups --exclude=.snapshot $opts ${base} ) > $tarfile 2>> $logfile
             # ret1=$?
             # if [ $ret1 = 0 ]; then
@@ -60,8 +53,7 @@ def execute_pack(options):
 
         def _pack_step3(dsdict):
             "show tarball contents"
-            print("step3:")
-            # echo "[`date +'%F %T'`]  Generating file list" | tee -a $logfile
+            print("[{0}]  Generating file list".format(_now()))
             # tar tvfz $tarfile 2>&1 >> $logfile
             # ret2=$?
             # if [ $ret2 = 0 ]; then
@@ -74,7 +66,7 @@ def execute_pack(options):
 
         def _pack_step4(dsdict):
             "contruct checksum & closing info"
-            print("step4:")
+            print("[{0}]  Generating checksum:".format(_now()))
             # md5=`md5sum $tarfile | awk '{print $1}'`
             # size=`ls -l $tarfile | awk '{print $5}'`
             # if [ $ret1 = 0 -a $ret2 = 0 -a $size -gt 0 ]; then

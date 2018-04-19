@@ -71,7 +71,6 @@ class test_ds_normalize(unittest.TestCase):
         ds_normalize.execute_normalize({'recursive' : False, 'verbose' : 0, 'targets' : [ dir2 ] })
         self.assertEqual(os.path.exists(dir2),          True)
 
-        # cleanup testing dir
         rmtree(testdir)
 
 
@@ -95,7 +94,6 @@ class test_ds_normalize(unittest.TestCase):
         self.assertEqual(os.path.exists(file1expected), True)
         self.assertEqual(os.path.exists(file2expected), True)
 
-        # cleanup testing dir
         rmtree(testdir)
 
 
@@ -115,7 +113,21 @@ class test_ds_normalize(unittest.TestCase):
         self.assertEqual(os.path.exists(file2),         True)
         self.assertEqual(os.path.exists(file3),         False)
 
-        # cleanup testing dir
+        rmtree(testdir)
+
+
+    def test_no_path(self):
+        lastdir = os.getcwd()
+        testdir = tempfile.mkdtemp()
+        os.chdir(testdir)
+        testfile = "abc def |*# 123"
+        expected = "abc-def-*-123"
+        ds_util.touchfile(testfile)
+        ds_normalize.execute_normalize({'recursive' : False, 'verbose' : 0,
+                                       'targets' : [ testfile ] })
+        self.assertEqual(os.path.exists(testfile), False)
+        self.assertEqual(os.path.exists(expected), True)
+        os.chdir(lastdir)
         rmtree(testdir)
 
 
@@ -138,7 +150,6 @@ class test_ds_normalize(unittest.TestCase):
         test_exception_FNF_thrown(self, True,  -1, [ nonfile3 ])
         test_exception_FNF_thrown(self, True,  -1, [ nondir1  ])
 
-        # cleanup testing dir
         rmtree(testdir)
 
 

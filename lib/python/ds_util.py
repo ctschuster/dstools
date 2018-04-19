@@ -2,7 +2,14 @@
 # ds_util.py
 ########################################################################
 import sys, os, re
+from datetime import datetime
 
+
+
+def timestamp_iso8601_now():
+    "compact iso8601 timestamp string - now"
+    date = datetime.now()
+    return date.__format__('%Y%m%dT%H%M%S')
 
 
 def rename(src, dst, options = {}):
