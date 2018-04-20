@@ -6,7 +6,7 @@ import ds_util
 
 
 
-def execute_flatten(options):
+def execute_flatten(targets, *, verbose=0, recursive=False):
     def flatten_link(loc):
         if (os.path.islink(loc)):
             mydir     = os.path.dirname(loc)
@@ -24,7 +24,7 @@ def execute_flatten(options):
 
             os.unlink(loc)
             ds_util.touchfile(loc)
-            ds_util.rename(loc, newloc, { 'verbose' : options['verbose'] if ('verbose' in options) else 0 })
+            ds_util.rename(loc, newloc, verbose = verbose)
 
     def flatten_recursive(loc):
         if (os.path.islink(loc)):
@@ -34,14 +34,14 @@ def execute_flatten(options):
             for file in filesindir:
                 flatten_recursive("{0}/{1}".format(loc, file))
 
-    if (len(options['targets']) != 0):
-        for loc in options['targets']:
+    if (len(targets) != 0):
+        for loc in targets:
             loc = os.path.normpath(loc)
             if (not os.path.exists(loc) and not os.path.islink(loc)):
-                if ('verbose' not in options  or  options['verbose'] >= 0):
+                if (verbose >= 0):
                     print("not found - '{0}'".format(loc))
                 raise FileNotFoundError
-            if('recursive' in options  and  options['recursive']):
+            if(recursive):
                 flatten_recursive(loc)
             else:
                 flatten_link(loc)

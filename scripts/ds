@@ -26,8 +26,8 @@ if (options['mode'] == "summary"):
 elif (options['mode'] == "normalize"):
     ds_normalize.execute_normalize(options)
 elif (options['mode'] == "flatten-links"):
-    ds_flatten.execute_flatten(options)
+    ds_flatten.execute_flatten(options['targets'], verbose=options['verbose'], recursive=options['recursive'])
 elif (options['mode'] == "pack"):
-    ds_pack.execute_pack(options)
+    ds_pack.execute_pack(options['targets'], verbose=options['verbose'])
 elif (options['mode'] == "check"):
     ds_check.execute_check(options)

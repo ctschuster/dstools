@@ -9,13 +9,13 @@ import ds_util
 
 
 
-def execute_pack(options):
+def execute_pack(targets, *, verbose=0):
     def _now():
-        return ds_util.timestamp_iso8601_now()
+        return ds_util.now_timestamp_pretty()
 
 
     def _remove(loc):
-        if (options['verbose'] > 0):
+        if (verbose > 0):
             print("deleting {}".format(loc))
         temploc = "{0}-DELETEME-{1}".format(loc, _now())
         os.rename(loc, temploc)
@@ -33,11 +33,10 @@ def execute_pack(options):
 #           subprocess.call(["df", "-hP", dsdict['ds']], stdout=sys.stdout)
             print("[{0}]  File system info:".format(_now()))
             (ret,output) = subprocess.getstatusoutput("df -hP {}".format(dsdict['ds']))
-            print(output)
+            ds_util.show_output(output.splitlines())
 
             print("[{0}]  Dataset summary:".format(_now()))
             ds_summary.single_summary(dsdict['ds'])
-
 
         def _pack_step2(dsdict):
             "generate tarball"
@@ -123,8 +122,8 @@ def execute_pack(options):
         return
 
 
-    if (len(options['targets']) != 0):
-        for loc in options['targets']:
+    if (len(targets) != 0):
+        for loc in targets:
             _packit(os.path.normpath(loc))
     else:
         print("no targets specified")

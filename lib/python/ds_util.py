@@ -6,21 +6,43 @@ from datetime import datetime
 
 
 
-def timestamp_iso8601_now():
-    "compact iso8601 timestamp string - now"
+# generate date/time in ISO8601 format
+def now_timestamp():
+    "current timestamp string - compact"
     date = datetime.now()
     return date.__format__('%Y%m%dT%H%M%S')
 
 
-def rename(src, dst, options = {}):
-    "file rename utility, w/ text output"
-    # BUG: consider case of destination being a directory
+# generate date/time in ISO8601 format
+def now_timestamp_pretty():
+    "current timestamp string - pretty"
+    date = datetime.now()
+    return date.__format__('%Y-%m-%dT%H:%M:%S')
+
+
+def touchfile(path):
+    with open(path, 'a'):
+        os.utime(path, None)
+
+
+def show_output(output, *, indent="    "):
+    for line in output:
+        print("{0}{1}".format(indent, line))
+
+
+# DESIGN BUG: consider behavior for destination being a directory/link
+# DESIGN BUG/CONSIDERATION: os.rename() may not work between file systems  ??
+def rename(src, dst, *, force=False, verbose=0):
+    "utility to rename file"
     if (not os.path.exists(src)):
         raise FileNotFoundError
     if (os.path.exists(dst)):
-        if (not('force' in options)  or  not options['force']):
+        if (os.path.isdir(dst)  or  os.path.islink(dst)):
             blocked  = True
-            qualtest = "  (name conflict - blocked)"
+            qualtest = "  (conflict - blocked by directory or link)"
+        elif (not force):
+            blocked  = True
+            qualtest = "  (conflict - blocked by file)"
         else:
             blocked  = False
             qualtest = "  (overwriting)"
@@ -33,7 +55,7 @@ def rename(src, dst, options = {}):
     dstdir  = os.path.dirname(dst)
     dstbase = os.path.basename(dst)
 
-    if (('verbose' in options  and  options['verbose']>0)):
+    if (verbose > 0):
         actionstr = "===>" if (not blocked) else "=X=>"
         if (srcdir == dstdir):
             dir = srcdir if (len(srcdir) > 0) else "."
@@ -47,11 +69,8 @@ def rename(src, dst, options = {}):
         if (os.path.exists(dst)):
             os.unlink(dst)
         os.rename(src, dst)
-
-
-def touchfile(path):
-    with open(path, 'a'):
-        os.utime(path, None)
+        return True
+    return False
 
 
 def normalize_name(namestr):

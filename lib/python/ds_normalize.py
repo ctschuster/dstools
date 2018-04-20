@@ -10,21 +10,18 @@ import ds_util
 
 
 def execute_normalize(options):
-    def normalize_single_file(loc):
+    def normalize_single_file(loc, verbose=0):
         if (os.path.exists(loc)):
             mydir     = os.path.dirname(loc)
             myfile    = os.path.basename(loc)
             myfilenew = ds_util.normalize_name(myfile)
             if (myfile != myfilenew):
                 newfile = myfilenew if (len(mydir) == 0) else "{0}/{1}".format(mydir, myfilenew)
-                if (not os.path.exists(newfile)):
-                    ds_util.rename(loc,newfile)
+                renamed = ds_util.rename(loc, newfile, verbose=verbose, force=False)
+                if (renamed):
                     return newfile
-                else:
-                    if (options['verbose']>=1):
-                        print("{0}:  '{1}' =X=> '{2}'  Collision - target file exists"
-                              .format(mydir,myfile,myfilenew))
             return loc
+        return
 
     def normalize_recursive(loc):
         newloc = normalize_single_file(loc)

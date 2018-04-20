@@ -41,14 +41,14 @@ class flatten_tests(unittest.TestCase):
         os.symlink(indirect, link3)
         os.symlink(tgt4, link4)
 
-        ds_flatten.execute_flatten({ 'targets' : [testdir], 'recursive' : False })
+        ds_flatten.execute_flatten([testdir])
 
         self.assertEqual(True, os.path.exists(link1))
         self.assertEqual(True, os.path.exists(link2))
         self.assertEqual(True, os.path.exists(link3))
         self.assertEqual(True, os.path.islink(link4))
 
-        ds_flatten.execute_flatten({ 'targets' : [link1,link2,link3,link4] })
+        ds_flatten.execute_flatten([link1,link2,link3,link4])
 
         self.assertEqual(False, os.path.exists(link1))
         self.assertEqual(False, os.path.exists(link2))
@@ -92,7 +92,7 @@ class flatten_tests(unittest.TestCase):
         os.symlink(indirect, link3)
         os.symlink(tgt4, link4)
 
-        ds_flatten.execute_flatten({ 'targets' : [testdir], 'recursive' : True })
+        ds_flatten.execute_flatten([testdir], recursive=True)
 
         self.assertEqual(False, os.path.exists(link1))
         self.assertEqual(False, os.path.exists(link2))
