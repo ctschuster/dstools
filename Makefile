@@ -1,8 +1,14 @@
+prefixdir=$(HOME)
+
+
 default help:
-	@echo "usage: make (test|test-verbose|clean)"
+	@echo "usage: make (test|test-verbose|install|clean)"
 
 install:
-	@echo "feature not yet developed"
+	@echo "installing dstools into '${prefixdir}':"
+	mkdir -p ${prefixdir}/bin ${prefixdir}/lib/python
+	install -m 0755 scripts/ds ${prefixdir}/bin
+	install -m 0644 lib/python/*.py ${prefixdir}/lib/python
 
 test:
 	@tests/run-tests -q
