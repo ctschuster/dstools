@@ -3,7 +3,7 @@
 # test_ds_util.py
 ########################################################################
 
-import sys
+import sys, io
 import unittest
 
 import ds_util
@@ -30,6 +30,18 @@ class normalize_name_tests(unittest.TestCase):
         result = ds_util.normalize_name(input)
         self.assertEqual(result, input)
 
+
+class run_command_tests(unittest.TestCase):
+    """
+    Tests for ds_util.run_command()
+    """
+    def test_normalize_name(self):
+        # test return values:
+        ret = ds_util.run_command(["/bin/true"])
+        self.assertEqual(ret, 0)
+        # test return values:
+        ret = ds_util.run_command(["/bin/false"])
+        self.assertEqual(ret, 1)
 
 
 if __name__ == '__main__':

@@ -32,19 +32,26 @@ def execute_pack(targets, *, verbose=0):
                 print("[{0}]  AbsPath:  {1}".format(_now(), dsdict['absds']))
             print("[{0}]  Server:   {1}".format(_now(), socket.gethostname()))
 
-#           subprocess.call(["df", "-hP", dsdict['ds']], stdout=sys.stdout)
             print("[{0}]  File system info:".format(_now()))
             (ret,output) = subprocess.getstatusoutput("df -hP {}".format(dsdict['ds']))
             ds_util.show_output(output.splitlines())
 
             print("[{0}]  Dataset summary:".format(_now()))
+            sys.stdout.write("    ")
             ds_summary.single_summary(dsdict['ds'])
 
         def _pack_step2(dsdict):
             "generate tarball"
             print("[{0}]  Generating tarball:  {1}".format(_now(), dsdict['tarfile']))
-            # ( cd $dir && tar cvfz - --exclude-backups --exclude=.snapshot $opts ${base} ) > $tarfile 2>> $logfile
-            ret1=0
+            savedir = os.getcwd()
+            tarfilewpath = os.path.abspath("{}/{}".format(savedir, dsdict['tarfile']))
+            dir  = os.path.dirname(dsdict['absds'])
+            base = os.path.basename(dsdict['absds'])
+            os.chdir(dir)
+            cmd = [ "tar", "cvfz", tarfilewpath, "--exclude-backups", "--exclude=.snapshot", base]
+            ret1 = ds_util.run_command(cmd)
+            #BUG: save stdout to logfile!
+            os.chdir(savedir)
             status_string = 'success' if (ret1 == 0) else 'failure'
             print("[{0}]  Tarball completion:  {1}".format(_now(), status_string))
 

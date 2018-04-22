@@ -3,6 +3,7 @@
 ########################################################################
 import sys, os, re
 from datetime import datetime
+import subprocess
 
 
 
@@ -71,6 +72,10 @@ def rename(src, dst, *, force=False, verbose=0):
         os.rename(src, dst)
         return True
     return False
+
+
+def run_command(cmd):
+    return subprocess.call(cmd)
 
 
 def normalize_name(namestr):
