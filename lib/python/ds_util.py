@@ -34,7 +34,7 @@ def show_output(output, *, indent="    "):
 # DESIGN BUG/CONSIDERATION: os.rename() may not work between file systems  ??
 def rename(src, dst, *, force=False, verbose=0):
     "utility to rename file"
-    if (not os.path.exists(src)):
+    if (not os.path.exists(src)  and  not os.path.islink(src)):
         raise FileNotFoundError
     if (os.path.exists(dst)):
         if (os.path.isdir(dst)  or  os.path.islink(dst)):

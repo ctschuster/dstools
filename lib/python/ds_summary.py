@@ -94,10 +94,9 @@ def single_summary(loc):
 
 
 
-def execute_summary(options):
-    list = options['targets']
-    if (len(list) != 0):
-        for loc in list:
+def execute_summary(targets):
+    if (len(targets) != 0):
+        for loc in targets:
             single_summary(loc)
     else:
         print("no targets specified")

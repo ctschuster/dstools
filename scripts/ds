@@ -22,12 +22,12 @@ if sys.version_info[0] < 3:
 options = ds_opts.process_args()
 
 if (options['mode'] == "summary"):
-    ds_summary.execute_summary(options)
+    ds_summary.execute_summary(options['targets'])
 elif (options['mode'] == "normalize"):
-    ds_normalize.execute_normalize(options)
+    ds_normalize.execute_normalize(options['targets'], verbose=options['verbose'], recursive=options['recursive'])
 elif (options['mode'] == "flatten-links"):
     ds_flatten.execute_flatten(options['targets'], verbose=options['verbose'], recursive=options['recursive'])
 elif (options['mode'] == "pack"):
     ds_pack.execute_pack(options['targets'], verbose=options['verbose'])
 elif (options['mode'] == "check"):
-    ds_check.execute_check(options)
+    ds_check.execute_check(options['targets'])

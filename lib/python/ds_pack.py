@@ -23,6 +23,8 @@ def execute_pack(targets, *, verbose=0):
 
 
     def _packit(ds):
+        ret1=-1
+        ret2=-1
         def _pack_step1(dsdict):
             "generate header info"
             print("[{0}]  Dataset:  {1}".format(_now(), dsdict['ds']))
@@ -42,41 +44,29 @@ def execute_pack(targets, *, verbose=0):
             "generate tarball"
             print("[{0}]  Generating tarball:  {1}".format(_now(), dsdict['tarfile']))
             # ( cd $dir && tar cvfz - --exclude-backups --exclude=.snapshot $opts ${base} ) > $tarfile 2>> $logfile
-            # ret1=$?
-            # if [ $ret1 = 0 ]; then
-            #     status=success
-            # else
-            #     status=failure
-            # fi
-            # echo "[`date +'%F %T'`]  Tarball completion: $status" | tee -a $logfile
+            ret1=0
+            status_string = 'success' if (ret1 == 0) else 'failure'
+            print("[{0}]  Tarball completion:  {1}".format(_now(), status_string))
 
         def _pack_step3(dsdict):
             "show tarball contents"
             print("[{0}]  Generating file list".format(_now()))
             # tar tvfz $tarfile 2>&1 >> $logfile
-            # ret2=$?
-            # if [ $ret2 = 0 ]; then
-            #     status=success
-            # else
-            #     status=failure
-            # fi
-            # echo "[`date +'%F %T'`]  Tarball listing: $status" | tee -a $logfile
-
+            ret2=0
+            status_string = 'success' if (ret2 == 0) else 'failure'
+            print("[{0}]  Tarball listing:  {1}".format(_now(), status_string))
 
         def _pack_step4(dsdict):
             "contruct checksum & closing info"
             print("[{0}]  Generating checksum:".format(_now()))
             # md5=`md5sum $tarfile | awk '{print $1}'`
-            # size=`ls -l $tarfile | awk '{print $5}'`
-            # if [ $ret1 = 0 -a $ret2 = 0 -a $size -gt 0 ]; then
-            #     summary=PASS
-            # else
-            #     summary=FAIL
-            # fi
+            size      = os.path.getsize(dsdict['tarfile'])
+            pf_string = 'PASS' if (ret1 == 0  and  ret2 == 0  and  size > 0) else 'FAIL'
             # echo "[`date +'%F %T'`]  Generating checksum/summary info" | tee -a $logfile
             # echo "[`date +'%F %T'`]  MD5:    ${md5}" | tee -a $logfile
-            # echo "[`date +'%F %T'`]  Size:   ${size} (bytes)" | tee -a $logfile
-            # echo "[`date +'%F %T'`]  Summary $tarfile - ${summary}" | tee -a $logfile
+
+            print("[{0}]  Size:   {1} bytes".format(_now(), -1))
+            print("[{0}]  Summary {1} - {2}".format(_now(), dsdict['tarfile'], pf_string))
 
         def _pack_step5(dsdict):
             "postprocessing - permissions & remove if specified"

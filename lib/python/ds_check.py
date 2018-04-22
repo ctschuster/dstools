@@ -7,13 +7,13 @@ import subprocess
 
 
 def single_check(loc):
-    return "--not-yet-implemented--"
+    sys.stderr.write("--not-yet-implemented--\n")
+    exit(1)
 
 
-def execute_check(loc):
-    if (len(modeargs) != 0):
-        for loc in modeargs:
+def execute_check(targets):
+    if (len(targets) != 0):
+        for loc in targets:
             single_check(loc)
     else:
         print("no targets specified")
-    return
