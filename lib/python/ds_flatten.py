@@ -39,7 +39,7 @@ def execute_flatten(targets, *, verbose=0, recursive=False):
             loc = os.path.normpath(loc)
             if (not os.path.exists(loc) and not os.path.islink(loc)):
                 if (verbose >= 0):
-                    print("not found - '{0}'".format(loc))
+                    sys.stderr.write("not found - '{0}'\n".format(loc))
                 raise FileNotFoundError
             if(recursive):
                 flatten_recursive(loc)

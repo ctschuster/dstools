@@ -14,12 +14,9 @@ import ds_normalize
 # BUG - Testing deficiency: Should test the output in verbose modes 0 & 1 & 2
 
 
-def test_exception_FNF_thrown(self, recursive, verbose, targets):
+def test_exception_FNF_thrown(self, recursive, verbose, file):
     try:
-        ds_normalize.execute_normalize({
-            'recursive' : recursive,
-            'verbose'   : verbose,
-            'targets'   : targets })
+        ds_normalize.execute_normalize([file], recursive=recursive, verbose=verbose)
     except FileNotFoundError:
         pass
     except Exception as e:
@@ -41,13 +38,13 @@ class test_ds_normalize(unittest.TestCase):
         file1         = "{}/   1Bc  540(3)   ".format(testdir)
         file1expected = "{}/1bc-540(3)".format(testdir)
         ds_util.touchfile(file1)
-        ds_normalize.execute_normalize({'recursive' : False, 'verbose' : 0, 'targets' : [ file1 ] })
+        ds_normalize.execute_normalize([file1], recursive=False, verbose=0)
         self.assertEqual(os.path.exists(file1),         False)
         self.assertEqual(os.path.exists(file1expected), True)
 
         file2         = "{}/normal-file.txt".format(testdir)
         ds_util.touchfile(file2)
-        ds_normalize.execute_normalize({'recursive' : False, 'verbose' : 0, 'targets' : [ file2 ] })
+        ds_normalize.execute_normalize([file2], recursive=False, verbose=0)
         self.assertEqual(os.path.exists(file2),         True)
 
         dir1            = "{}/dir with crazy spacing and chars@".format(testdir)
@@ -59,7 +56,7 @@ class test_ds_normalize(unittest.TestCase):
         os.mkdir(dir1)
         ds_util.touchfile(file1_in_dir1)
         ds_util.touchfile(file2_in_dir1)
-        ds_normalize.execute_normalize({'recursive' : False, 'verbose' : 0, 'targets' : [ dir1 ] })
+        ds_normalize.execute_normalize([dir1], recursive=False, verbose=0)
         self.assertEqual(os.path.exists(dir1),          False)
         self.assertEqual(os.path.exists(dir1expected),  True)
         self.assertEqual(os.path.exists(file1_in_dir1),    False)
@@ -68,7 +65,7 @@ class test_ds_normalize(unittest.TestCase):
         self.assertEqual(os.path.exists(file2_in_dir1exp), True)
         dir2          = "{}/normal-dir".format(testdir)
         os.mkdir(dir2)
-        ds_normalize.execute_normalize({'recursive' : False, 'verbose' : 0, 'targets' : [ dir2 ] })
+        ds_normalize.execute_normalize([dir2], recursive=False, verbose=0)
         self.assertEqual(os.path.exists(dir2),          True)
 
         rmtree(testdir)
@@ -87,7 +84,7 @@ class test_ds_normalize(unittest.TestCase):
         ds_util.touchfile(file2)
         file1expected = "{}/y-1bc---540(3)".format(dir1expected)
         file2expected = "{}/z--2bc---540(3)--x".format(dir1expected)
-        ds_normalize.execute_normalize({'recursive' : True, 'verbose' : 0, 'targets' : [ testdir ] })
+        ds_normalize.execute_normalize([testdir], recursive=True, verbose=0)
         #raise FileNotFoundError
         self.assertEqual(os.path.exists(file1),         False)
         self.assertEqual(os.path.exists(file2),         False)
@@ -107,8 +104,7 @@ class test_ds_normalize(unittest.TestCase):
         ds_util.touchfile(file1)
         ds_util.touchfile(file2)
         ds_util.touchfile(file3)
-        ds_normalize.execute_normalize({'recursive' : False, 'verbose' : 0,
-                                       'targets' : [ file1, file2, file3 ] })
+        ds_normalize.execute_normalize([file1, file2, file3], recursive=False, verbose=0)
         self.assertEqual(os.path.exists(file1),         True)
         self.assertEqual(os.path.exists(file2),         True)
         self.assertEqual(os.path.exists(file3),         False)
@@ -123,8 +119,7 @@ class test_ds_normalize(unittest.TestCase):
         testfile = "abc def |*# 123"
         expected = "abc-def-*-123"
         ds_util.touchfile(testfile)
-        ds_normalize.execute_normalize({'recursive' : False, 'verbose' : 0,
-                                       'targets' : [ testfile ] })
+        ds_normalize.execute_normalize([testfile], recursive=False, verbose=0)
         self.assertEqual(os.path.exists(testfile), False)
         self.assertEqual(os.path.exists(expected), True)
         os.chdir(lastdir)
@@ -141,14 +136,14 @@ class test_ds_normalize(unittest.TestCase):
         nonfile3 = "{}/no-such-file.txt".format(dir1)
         nondir1  = "{}/no-such-dir".format(testdir)
 
-        test_exception_FNF_thrown(self, False, -1, [ nonfile1 ])
-        test_exception_FNF_thrown(self, False, -1, [ nonfile2 ])
-        test_exception_FNF_thrown(self, False, -1, [ nonfile3 ])
-        test_exception_FNF_thrown(self, False, -1, [ nondir1  ])
-        test_exception_FNF_thrown(self, True,  -1, [ nonfile1 ])
-        test_exception_FNF_thrown(self, True,  -1, [ nonfile2 ])
-        test_exception_FNF_thrown(self, True,  -1, [ nonfile3 ])
-        test_exception_FNF_thrown(self, True,  -1, [ nondir1  ])
+        test_exception_FNF_thrown(self, False, -1, nonfile1 )
+        test_exception_FNF_thrown(self, False, -1, nonfile2 )
+        test_exception_FNF_thrown(self, False, -1, nonfile3 )
+        test_exception_FNF_thrown(self, False, -1, nondir1  )
+        test_exception_FNF_thrown(self, True,  -1, nonfile1 )
+        test_exception_FNF_thrown(self, True,  -1, nonfile2 )
+        test_exception_FNF_thrown(self, True,  -1, nonfile3 )
+        test_exception_FNF_thrown(self, True,  -1, nondir1  )
 
         rmtree(testdir)
 
